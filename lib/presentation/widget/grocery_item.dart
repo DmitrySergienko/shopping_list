@@ -34,6 +34,7 @@ class GroceryItem extends StatelessWidget {
               children: [
                 Text(name),
                 Text(quantity.toString()),
+                
               ],
             ),
           )
