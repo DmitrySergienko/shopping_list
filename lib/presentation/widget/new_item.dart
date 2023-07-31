@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shopping_list/data/categories.dart';
 import 'package:shopping_list/models/category.dart';
@@ -21,9 +24,22 @@ class _NewItem extends State<NewItem> {
     if(_formKey.currentState!.validate()){
 
       // 1. save the form
-     _formKey.currentState!.save(); 
+     _formKey.currentState!.save();
 
-      // 2. go back one screen and put args to pop()
+     // 2. send POST http request
+      var url = Uri.https('flutter-test-2c78d-default-rtdb.firebaseio.com','shopping-list.json');
+
+      http.post(
+        url,
+        headers: {'Content-Type':'application/json'}, //???
+        body: json.encode({  //put our object which we are sending
+          'name': _enteredName,
+          'quantity': _enteredQuantity,
+          'category': _selectedCategory.title
+        })
+        );
+
+      // 3. go back one screen and put args to pop()
       Navigator.of(context).pop(
       GroceryItem(
           id: DateTime.now().toString(), // create new id manually
