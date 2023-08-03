@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shopping_list/data/categories.dart';
 import 'package:shopping_list/models/category.dart';
-import 'package:shopping_list/presentation/widget/grocery_item.dart';
 
 class NewItem extends StatefulWidget {
   const NewItem({super.key});
@@ -19,7 +18,7 @@ class _NewItem extends State<NewItem> {
   var _enteredQuantity = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
 
-  void _saveItem() {
+  void _saveItem() async {
     if (_formKey.currentState!.validate()) {
       // 1. save the form
       _formKey.currentState!.save();
@@ -28,14 +27,22 @@ class _NewItem extends State<NewItem> {
       var url = Uri.https('flutter-test-2c78d-default-rtdb.firebaseio.com',
           'shopping-list.json');
 
-      http.post(url,
-          headers: {'Content-Type': 'application/json'}, //???
-          body: json.encode({
-            //put our object which we are sending
-            'name': _enteredName,
-            'quantity': _enteredQuantity,
-            'category': _selectedCategory.title
-          }));
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'}, //???
+        body: json.encode({
+          //put our object which we are sending
+          'name': _enteredName,
+          'quantity': _enteredQuantity,
+          'category': _selectedCategory.title
+        }),
+      );
+      print(response.body);
+      print(response.statusCode);
+
+      if (!context.mounted) {
+        return;
+      }
 
       // 3. go back one screen and put args to pop()
       Navigator.of(context).pop();
