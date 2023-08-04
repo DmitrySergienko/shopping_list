@@ -17,6 +17,8 @@ class GroceryList extends StatefulWidget {
 class _GroceryListState extends State<GroceryList> {
   List<GroceryItem> _groceryItems = [];
 
+  var _isLoading = true;
+
   final _formKey = GlobalKey<FormState>(); //run the Form object
 
   void _loadItems() async {
@@ -46,6 +48,7 @@ class _GroceryListState extends State<GroceryList> {
     }
     setState(() {
       _groceryItems = loadedItemsList;
+      _isLoading = false;
     });
   }
 
@@ -108,6 +111,10 @@ class _GroceryListState extends State<GroceryList> {
         ],
       ),
     );
+
+    if (_isLoading) {
+      activePage = const Center(child: CircularProgressIndicator());
+    }
 
     if (_groceryItems.isEmpty) {
       activePage = const EmptyScreen();
