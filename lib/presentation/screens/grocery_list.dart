@@ -17,14 +17,26 @@ class GroceryList extends StatefulWidget {
 class _GroceryListState extends State<GroceryList> {
   List<GroceryItem> _groceryItems = [];
 
-  var _isLoading = true;
+  var _isLoading = true; //progress bar
 
   final _formKey = GlobalKey<FormState>(); //run the Form object
 
+  String? _error; //in case of error
+
   void _loadItems() async {
+    setState(() {
+      _isLoading = true; // Turn on loading indicator as we start the request
+    });
+
     final url = Uri.https(
-        'flutter-test-2c78d-default-rtdb.firebaseio.com', 'shopping-list.json');
+        'flutte-test-2c78d-default-rtdb.firebaseio.com', 'shopping-list.json');
     final response = await http.get(url);
+
+    if (response.statusCode >= 400) {
+      setState(() {
+        _error = 'Failed to fatch data';
+      });
+    }
 
     //we decode json to normal text view
     final Map<String, dynamic> listData = jsonDecode(response.body);
@@ -112,12 +124,17 @@ class _GroceryListState extends State<GroceryList> {
       ),
     );
 
-    if (_isLoading) {
-      activePage = const Center(child: CircularProgressIndicator());
-    }
+    //in case error
+    if (_error != null) {
+      activePage = Center(child: Text(_error!));
+    } else {
+      if (_groceryItems.isEmpty) {
+        activePage = const EmptyScreen();
 
-    if (_groceryItems.isEmpty) {
-      activePage = const EmptyScreen();
+        if (_isLoading) {
+          activePage = const Center(child: CircularProgressIndicator());
+        }
+      }
     }
 
     return Scaffold(

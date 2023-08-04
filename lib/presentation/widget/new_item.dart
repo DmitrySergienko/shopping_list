@@ -18,7 +18,8 @@ class _NewItem extends State<NewItem> {
   var _enteredName = '';
   var _enteredQuantity = 1;
   var _selectedCategory = categories[Categories.vegetables]!;
-  var _isSending = false;
+
+  var _isSending = false; //progress bar
 
   void _saveItem() async {
     if (_formKey.currentState!.validate()) {
