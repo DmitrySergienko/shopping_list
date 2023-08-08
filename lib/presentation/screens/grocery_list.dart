@@ -73,38 +73,46 @@ class _GroceryListState extends State<GroceryList> {
 
     final url = Uri.https(
         'flutter-test-2c78d-default-rtdb.firebaseio.com', 'shopping-list.json');
-    final response = await http.get(url);
 
-    if (response.statusCode >= 400) {
+    try {
+      final response = await http.get(url);
+
+      if (response.body == 'null') {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      //we decode json to normal text view
+      final Map<String, dynamic> listData = jsonDecode(response.body);
+
+      final List<GroceryItem> loadedItemsList = [];
+      for (final item in listData.entries) {
+        //типа сравниваем есть в  категория с
+        final categoty = categories.entries
+            .firstWhere(
+                (element) => element.value.title == item.value['category'])
+            .value;
+
+        loadedItemsList.add(
+          GroceryItem(
+            id: item.key,
+            name: item.value['name'],
+            quantity: item.value['quantity'],
+            category: categoty,
+          ),
+        );
+      }
       setState(() {
-        _error = 'Failed to fatch data';
+        _groceryItems = loadedItemsList;
+        _isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        _error = 'Error: $error';
       });
     }
-
-    //we decode json to normal text view
-    final Map<String, dynamic> listData = jsonDecode(response.body);
-
-    final List<GroceryItem> loadedItemsList = [];
-    for (final item in listData.entries) {
-      //типа сравниваем есть в  категория с
-      final categoty = categories.entries
-          .firstWhere(
-              (element) => element.value.title == item.value['category'])
-          .value;
-
-      loadedItemsList.add(
-        GroceryItem(
-          id: item.key,
-          name: item.value['name'],
-          quantity: item.value['quantity'],
-          category: categoty,
-        ),
-      );
-    }
-    setState(() {
-      _groceryItems = loadedItemsList;
-      _isLoading = false;
-    });
   }
 
   void _addItem() async {
