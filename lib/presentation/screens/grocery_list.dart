@@ -23,13 +23,56 @@ class _GroceryListState extends State<GroceryList> {
 
   String? _error; //in case of error
 
+  void _removeItem(GroceryItem item) async {
+    final index = _groceryItems.indexOf(item);
+
+    //remove item from the list
+    setState(() {
+      _groceryItems.remove(item);
+    });
+
+    //remove item from Firebase
+    final url = Uri.https('flutter-test-2c78d-default-rtdb.firebaseio.com',
+        'shopping-list/${item.id}.json');
+    final response = await http.delete(url);
+
+    if (response.statusCode >= 400) {
+      //optional show error mesage
+      setState(() {
+        _groceryItems.insert(index, item);
+      });
+    }
+  }
+
+  void _removeAll() async {
+    // Remember the old list in case we need to revert due to an error
+    final oldList = List.from(_groceryItems);
+
+    setState(() {
+      _groceryItems.clear();
+    });
+
+    //remove item from Firebase
+    final url = Uri.https(
+        'flutter-test-2c78d-default-rtdb.firebaseio.com', 'shopping-list.json');
+
+    final response = await http.delete(url);
+
+    if (response.statusCode >= 400) {
+      // If there's an error, revert changes
+      setState(() {
+        _groceryItems.addAll(oldList as Iterable<GroceryItem>);
+      });
+    }
+  }
+
   void _loadItems() async {
     setState(() {
       _isLoading = true; // Turn on loading indicator as we start the request
     });
 
     final url = Uri.https(
-        'flutte-test-2c78d-default-rtdb.firebaseio.com', 'shopping-list.json');
+        'flutter-test-2c78d-default-rtdb.firebaseio.com', 'shopping-list.json');
     final response = await http.get(url);
 
     if (response.statusCode >= 400) {
@@ -97,9 +140,7 @@ class _GroceryListState extends State<GroceryList> {
             Dismissible(
               key: Key(item.id),
               onDismissed: (direction) {
-                setState(() {
-                  _groceryItems.remove(item);
-                });
+                _removeItem(item);
               },
               child: GroceryItem(
                   id: item.id,
@@ -112,9 +153,7 @@ class _GroceryListState extends State<GroceryList> {
             children: [
               TextButton(
                 onPressed: () {
-                  setState(() {
-                    _groceryItems.clear();
-                  });
+                  _removeAll();
                 },
                 child: const Text('Remove all'),
               ),
